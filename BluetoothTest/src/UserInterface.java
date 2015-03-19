@@ -1,6 +1,8 @@
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 
@@ -11,10 +13,19 @@ import java.awt.SystemColor;
 import java.awt.TextArea;
 
 import javax.swing.JLabel;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+
+import com.opencsv.CSVParser;
+import com.opencsv.CSVReader;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.awt.Color;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 
 
 public class UserInterface {
@@ -61,7 +72,7 @@ public class UserInterface {
 		btnViewSemesterReport.setBackground(SystemColor.activeCaption);
 		btnViewSemesterReport.setBounds(494, 291, 300, 50);
 		frame.getContentPane().add(btnViewSemesterReport);
-		
+
 		JLabel lblRights = new JLabel("@2015 Datla, Kulwicki, Salzman");
 		lblRights.setForeground(SystemColor.activeCaption);
 		lblRights.setFont(new Font("Arial Narrow", Font.ITALIC, 12));
@@ -80,9 +91,9 @@ public class UserInterface {
 	}
 
 	private void viewSemesterReport(){
-		String worked = Main.viewSemesterReport();
+
 		JFrame semesterReportFrame = new JFrame();
-		
+
 		semesterReportFrame.getContentPane().setBackground(SystemColor.window);
 		semesterReportFrame.setBounds(100, 100, 1000, 500);
 		semesterReportFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -91,25 +102,58 @@ public class UserInterface {
 		semesterReportFrame.setLocationRelativeTo(null);
 		semesterReportFrame.setVisible(true);
 
-		JLabel lblNewLabel = new JLabel("SUMMARY REPORT");
+		JLabel lblNewLabel = new JLabel("SEMESTER REPORT");
 		lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNewLabel.setForeground(SystemColor.activeCaption);
 		lblNewLabel.setFont(new Font("Arial Narrow", Font.BOLD | Font.ITALIC, 30));
 		lblNewLabel.setBounds(308, 32, 367, 71);
-		semesterReportFrame.getContentPane().add(lblNewLabel);
-		
-		TextArea textArea = new TextArea();
-		textArea.setText(worked);
-		textArea.setForeground(SystemColor.textInactiveText);
-		textArea.setBackground(SystemColor.window);
-		textArea.setFont(new Font("Arial Narrow", Font.BOLD, 14));
-		textArea.setBounds(28, 130, 933, 307);
-		semesterReportFrame.getContentPane().add(textArea);
+		semesterReportFrame.add(lblNewLabel);
+
+
+		Object[][] rowData = {};
+		Object[] columnNames = {};
+		DefaultTableModel resultsTableModel = new DefaultTableModel(rowData, columnNames);
+		JTable resultsTable = new JTable(resultsTableModel);
+		resultsTable.setModel(resultsTableModel);
+		resultsTable.setBounds(59, 208, 210, -149);
+
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(10, 135, 964, 316);
+		semesterReportFrame.add(scrollPane);
+
+		try {
+			CSVReader r = new CSVReader(new FileReader("semesterReport.csv"));
+			List<String[]> allLines = r.readAll();
+			
+			int length = (allLines.get(0).length);
+			int k= 0;
+			while (length > k){
+			for(String line : allLines.get(0)){
+					resultsTableModel.addColumn(line);
+					k++;
+				}
+			}
+			for(String[] line : allLines){
+					resultsTableModel.addRow(line);
+			}
+			r.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		scrollPane.setViewportView(resultsTable);
+
 	}
 
 	private void viewSummaryReport(){
+
+		Main.locateDevices();
+		Main.setAttend();
+
 		JFrame summaryReportFrame = new JFrame();
-		
+
 		summaryReportFrame.getContentPane().setBackground(SystemColor.window);
 		summaryReportFrame.getContentPane().setLayout(null);
 		summaryReportFrame.setBounds(100, 100, 1000, 500);
@@ -118,8 +162,8 @@ public class UserInterface {
 		summaryReportFrame.setTitle("BlueRoll | Summary Report");
 		summaryReportFrame.setLocationRelativeTo(null);
 		summaryReportFrame.setVisible(true);
-		
-		
+
+
 
 		JLabel lblNewLabel = new JLabel("SUMMARY REPORT");
 		lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -127,7 +171,7 @@ public class UserInterface {
 		lblNewLabel.setFont(new Font("Arial Narrow", Font.BOLD | Font.ITALIC, 30));
 		lblNewLabel.setBounds(308, 32, 367, 71);
 		summaryReportFrame.getContentPane().add(lblNewLabel);
-		
+
 		TextArea textArea = new TextArea();
 		textArea.setText("");
 		textArea.setForeground(SystemColor.textInactiveText);
@@ -135,9 +179,9 @@ public class UserInterface {
 		textArea.setFont(new Font("Arial Narrow", Font.BOLD, 14));
 		textArea.setBounds(28, 130, 933, 307);
 		textArea.setEditable(false);
-			
+
 		ArrayList<Student> studentList = new ArrayList<Student>();
-		studentList = Main.rollCall();
+		studentList = Main.getStudents();
 		StringBuilder summaryReport = new StringBuilder();
 		int count = 0;
 		for(Student st : studentList){
@@ -149,17 +193,17 @@ public class UserInterface {
 				summaryReport.append(st.getStudentName() + " is absent,  " + "\n");
 			}
 		}
-		
+
 		double percent = (count*1.0/studentList.size())*100;
 		String percentString = "That is " +percent+ "% of the class!";
 		summaryReport.append(percentString);
 		String results = summaryReport.toString();
 		textArea.setText(results);
 		summaryReportFrame.getContentPane().add(textArea);
-		
+
 	}
 
-	
+
 	public JFrame getFrame() {
 		return frame;
 	}
