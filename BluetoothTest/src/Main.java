@@ -30,15 +30,13 @@ public class Main {
 
 	public static void locateDevices(){
 
-		Vector<RemoteDevice> devices = new Vector<RemoteDevice>();
-
 		try {
 			devices = BluetoothTest.discoverDevices();
+			setDevices(devices);
 			for(int i = 0; i < devices.size(); i++){
 				RemoteDevice bt = devices.get(i);
 				System.out.println(bt.getBluetoothAddress());
 			}
-			setDevices(devices);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
@@ -46,9 +44,9 @@ public class Main {
 		}
 	}
 
-	public static ArrayList<Student>  setAttend(){
+	public static void setAttend(){
 
-
+		studentList.clear();
 		CSVParser parser = new CSVParser();
 		try {
 			CSVReader reader = new CSVReader(new FileReader("roster.csv"),1,parser);
@@ -67,14 +65,16 @@ public class Main {
 			e.printStackTrace();
 		}
 
-		Vector<RemoteDevice> devices = getDevices();
+		devices = getDevices();
+		
 		for(RemoteDevice device: devices){
 			boolean marked = false;
 			for(int i = 0; i < studentList.size() && marked == false; i++){
 				if(!studentList.get(i).isPresent()){
+					System.out.println(studentList.get(i).getDevices().get(0) + device.getBluetoothAddress());
 					if(studentList.get(i).checkID(device.getBluetoothAddress())){
 						studentList.get(i).setPresent(true);
-						System.out.println(studentList.get(i).getStudentName());
+					System.out.println(studentList.get(i).getStudentName());
 						marked = true;
 					}
 				}
@@ -82,7 +82,6 @@ public class Main {
 		}
 		setStudents(studentList);
 		viewSemesterReport();
-		return studentList;
 	}
 
 

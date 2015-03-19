@@ -133,6 +133,7 @@ public class UserInterface {
 					k++;
 				}
 			}
+			allLines.remove(0);
 			for(String[] line : allLines){
 					resultsTableModel.addRow(line);
 			}
@@ -183,6 +184,8 @@ public class UserInterface {
 		ArrayList<Student> studentList = new ArrayList<Student>();
 		studentList = Main.getStudents();
 		StringBuilder summaryReport = new StringBuilder();
+		summaryReport.delete(0, summaryReport.length());
+		
 		int count = 0;
 		for(Student st : studentList){
 			if(st.isPresent()){
