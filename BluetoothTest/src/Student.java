@@ -12,6 +12,12 @@ public class Student {
 		this.firstName = firstName;
 	}
 	
+	public Student(String lastName, String firstName, ArrayList<String> devices){
+		this.lastName = lastName;
+		this.firstName = firstName;
+		this.devices = devices;
+	}
+	
 	public void addDevice(String deviceID){
 		this.devices.add(deviceID);
 	}
@@ -51,6 +57,11 @@ public class Student {
 	public void setPresent(boolean isPresent) {
 		this.isPresent = isPresent;
 	}
+	
+	public String getStudentName(){
+		return this.firstName+" "+this.lastName;
+	}
+	
 	
 }
 

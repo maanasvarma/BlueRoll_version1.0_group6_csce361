@@ -1,7 +1,6 @@
 import java.io.IOException;
 import java.util.Vector;
 import javax.bluetooth.*;
-import com.intel.bluetooth.*;
 
 public class BluetoothTest {
 	public static final Vector<RemoteDevice> devices = new Vector<RemoteDevice>();
