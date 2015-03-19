@@ -5,9 +5,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
-import java.time.LocalDate;
 
 import javax.bluetooth.RemoteDevice;
+
+import java.time.LocalDate;
 
 import com.opencsv.CSVParser;
 import com.opencsv.CSVReader;
@@ -15,11 +16,23 @@ import com.opencsv.CSVWriter;
 
 public class Main {
 
+	private static Vector<RemoteDevice> devices = new Vector<RemoteDevice>();
+	private static ArrayList<Student> studentList = new ArrayList<Student>();
+	private static List<String[]> allLines;
+
 	public static void main(String[] args) {
-		Vector<RemoteDevice> devices = new Vector<RemoteDevice>();
-		ArrayList<Student> studentList = new ArrayList<Student>();
+
+		UserInterface window = new UserInterface();
+		window.getFrame().setVisible(true);
+
+
+	}
+
+	public static void locateDevices(){
+
 		try {
 			devices = BluetoothTest.discoverDevices();
+			setDevices(devices);
 			for(int i = 0; i < devices.size(); i++){
 				RemoteDevice bt = devices.get(i);
 				System.out.println(bt.getBluetoothAddress());
@@ -29,7 +42,11 @@ public class Main {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		
+	}
+
+	public static void setAttend(){
+
+		studentList.clear();
 		CSVParser parser = new CSVParser();
 		try {
 			CSVReader reader = new CSVReader(new FileReader("roster.csv"),1,parser);
@@ -47,25 +64,36 @@ public class Main {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		devices = getDevices();
 		
 		for(RemoteDevice device: devices){
 			boolean marked = false;
 			for(int i = 0; i < studentList.size() && marked == false; i++){
 				if(!studentList.get(i).isPresent()){
+					System.out.println(studentList.get(i).getDevices().get(0) + device.getBluetoothAddress());
 					if(studentList.get(i).checkID(device.getBluetoothAddress())){
 						studentList.get(i).setPresent(true);
-//						System.out.println(studentList.get(i).getStudentName());
+					System.out.println(studentList.get(i).getStudentName());
 						marked = true;
 					}
 				}
 			}
 		}
-		
+		setStudents(studentList);
+		viewSemesterReport();
+	}
+
+
+	public static void viewSemesterReport(){
+
 		LocalDate date = LocalDate.now();
 		String today = date.toString();
+		ArrayList<Student> studentList = getStudents();
+
 		try {
 			CSVReader reader = new CSVReader(new FileReader("semesterReport.csv"));
-			List<String[]> allLines = reader.readAll();
+			allLines = reader.readAll();
 			int length = allLines.get(0).length;
 			if(allLines.get(0)[length-1].equalsIgnoreCase(today)){
 				//assuming that both studentList and semesterReport are sorted the same
@@ -102,30 +130,67 @@ public class Main {
 				}
 			}
 			reader.close();
-			
 			CSVWriter writer = new CSVWriter(new FileWriter("semesterReport.csv"));
 			writer.writeAll(allLines);
 			writer.close();
+			setAllLines(allLines);
+			
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		int count = 0;
-		for(int i = 0; i < studentList.size(); i++){
-			if(studentList.get(i).isPresent()){
-				System.out.println(studentList.get(i).getStudentName()+" is present");
-				count++;
-			}else{
-				System.out.println(studentList.get(i).getStudentName()+" is absent");
-			}
+
+
 		}
-		System.out.println("There are "+count+"/"+studentList.size()+" students present.");
-		double percent = count*1.0/studentList.size()*100;
-		System.out.printf("That is %.2f%% of the class!\n", percent);
 
 		
+
+		public void cmdPrint(){
+			int count = 0;
+			ArrayList<Student> studentList = getStudents();
+
+			for(int i = 0; i < studentList.size(); i++){
+				if(studentList.get(i).isPresent()){
+					System.out.println(studentList.get(i).getStudentName()+" is present");
+					count++;
+				}else{
+					System.out.println(studentList.get(i).getStudentName()+" is absent");
+				}
+			}
+			System.out.println("There are "+count+"/"+studentList.size()+" students present.");
+			double percent = count*1.0/studentList.size()*100;
+			System.out.printf("That is %.2f%% of the class!\n", percent);
+		}
+
+		public static Vector<RemoteDevice> getDevices(){
+			return devices;
+		}
+
+		public static void setDevices(Vector<RemoteDevice> newDevices){
+			newDevices = devices;
+		}
+
+		public static ArrayList<Student> getStudents(){
+			return studentList;
+		}
+
+		public static void setStudents(ArrayList<Student> newStudents){
+			newStudents = studentList;
+		}
+		
+		public static List<String[]> getAllLines() {
+			return allLines;
+		}
+
+		public static void setAllLines(List<String[]> allLines) {
+			Main.allLines = allLines;
+		}
+		
+		public static void print(){
+			System.out.print(allLines.get(0).length);
+		}
 	}
 
-}
+
+
