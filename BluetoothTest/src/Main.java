@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
-import java.time.LocalDate;
-
 import javax.bluetooth.RemoteDevice;
 
 import com.opencsv.CSVParser;
@@ -16,6 +14,13 @@ import com.opencsv.CSVWriter;
 public class Main {
 
 	public static void main(String[] args) {
+
+		UserInterface window = new UserInterface();
+		window.getFrame().setVisible(true);
+
+	}
+	public static ArrayList<Student> rollCall(){
+
 		Vector<RemoteDevice> devices = new Vector<RemoteDevice>();
 		ArrayList<Student> studentList = new ArrayList<Student>();
 		try {
@@ -29,7 +34,7 @@ public class Main {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		
+
 		CSVParser parser = new CSVParser();
 		try {
 			CSVReader reader = new CSVReader(new FileReader("roster.csv"),1,parser);
@@ -47,20 +52,20 @@ public class Main {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		for(RemoteDevice device: devices){
 			boolean marked = false;
 			for(int i = 0; i < studentList.size() && marked == false; i++){
 				if(!studentList.get(i).isPresent()){
 					if(studentList.get(i).checkID(device.getBluetoothAddress())){
 						studentList.get(i).setPresent(true);
-//						System.out.println(studentList.get(i).getStudentName());
+						//						System.out.println(studentList.get(i).getStudentName());
 						marked = true;
 					}
 				}
 			}
 		}
-		
+
 		LocalDate date = LocalDate.now();
 		String today = date.toString();
 		try {
@@ -102,7 +107,7 @@ public class Main {
 				}
 			}
 			reader.close();
-			
+
 			CSVWriter writer = new CSVWriter(new FileWriter("semesterReport.csv"));
 			writer.writeAll(allLines);
 			writer.close();
@@ -111,7 +116,7 @@ public class Main {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		int count = 0;
 		for(int i = 0; i < studentList.size(); i++){
 			if(studentList.get(i).isPresent()){
@@ -125,7 +130,8 @@ public class Main {
 		double percent = count*1.0/studentList.size()*100;
 		System.out.printf("That is %.2f%% of the class!\n", percent);
 
-		
+		return studentList;
 	}
 
 }
+
